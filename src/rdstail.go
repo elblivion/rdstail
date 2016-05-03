@@ -6,6 +6,7 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -146,6 +147,10 @@ func Watch(r *rds.RDS, db string, rate time.Duration, callback func(string) erro
 	t := time.NewTicker(rate)
 	empty := 0
 	const checkLogfileRate = 4
+	lastLine := ""
+	var lineSlice []string
+	var newLines string
+	var tmp []string
 	for {
 		select {
 		case <-t.C:
@@ -159,6 +164,8 @@ func Watch(r *rds.RDS, db string, rate time.Duration, callback func(string) erro
 				if newLogFile != nil {
 					logFile = newLogFile
 					marker = ""
+					//fmt.Println("Reset lastLine")
+					//lastLine = ""
 				}
 			}
 
@@ -170,9 +177,35 @@ func Watch(r *rds.RDS, db string, rate time.Duration, callback func(string) erro
 			if lines == "" {
 				empty++
 			} else {
-				empty = 0
-				if err := callback(lines); err != nil {
-					return err
+				if lastLine != "" {
+					tmp = strings.Split(lines, lastLine)
+					if len(tmp) <= 1 {
+						//fmt.Println("Sending all lines found")
+						lastLine = ""
+						newLines = lines
+					} else {
+						//fmt.Println("Sending only new lines")
+						newLines = tmp[1]
+					}
+				} else {
+					//fmt.Println("Sending all lines found")
+					newLines = lines
+				}
+
+				lineSlice = strings.Split(newLines, "\n")
+				//fmt.Println("Getting new slice")
+				if len(lineSlice) > 1 {
+					if lineSlice[len(lineSlice)-2] != "" {
+						lastLine = fmt.Sprintf("%s\n", lineSlice[len(lineSlice)-2])
+					}
+				}
+				//fmt.Printf("found slice of: %d elems\n", len(lineSlice))
+				//fmt.Printf("lastLine: %s\n", lastLine)
+				if newLines != "\n" {
+					empty = 0
+					if err := callback(newLines); err != nil {
+						return err
+					}
 				}
 			}
 		case <-stop:
