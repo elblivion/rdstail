@@ -2,4 +2,4 @@ install: pip install --user awscli
 
 cache: pip
 
-script: aws help
+script:  aws configure get region
