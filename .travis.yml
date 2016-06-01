@@ -3,3 +3,4 @@ install: pip install --user awscli
 cache: pip
 
 script:  aws configure list
+
