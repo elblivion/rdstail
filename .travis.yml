@@ -1,6 +1,9 @@
+before_install: ls $HOME/.cache/pip
+
 install: pip install --user awscli
 
 cache: pip
 
-script:  aws configure list
+script:  
+  - aws configure list
 
