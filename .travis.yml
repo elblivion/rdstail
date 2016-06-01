@@ -1,9 +1,12 @@
 
-install: pip install awscli
+install: pip install --user awscli
 
 
-cache: pip
-
+cache:
+  - pip
+  - directories:
+    - $HOME/.local
+    
 script:  
   - aws configure list
 
