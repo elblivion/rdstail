@@ -1,5 +1,5 @@
 
-install: pip install --user awscli --cache-dir=$HOME/.cache/pip
+install: pip install awscli
 
 
 cache: pip
