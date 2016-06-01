@@ -7,5 +7,5 @@ cache: pip
 script:  
   - aws configure list
 
-after_success: ls $HOME/.cache/pip
+after_success: find $HOME/.cache/pip
 
